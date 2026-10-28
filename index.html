@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="STLデータの水密性やNon-manifoldなどをブラウザ上で簡易チェックします。" />
+  <title>STL Checker</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <div class="eyebrow">3D PRINT PRE-FLIGHT</div>
+      <h1>STL Checker</h1>
+      <p class="lead">
+        3Dプリント前に、STLデータの基本的な不備を簡易チェックします。
+        ファイルはサーバーへ送信されず、このブラウザ内だけで解析されます。
+      </p>
+    </header>
+
+    <section class="upload-card" aria-labelledby="upload-title">
+      <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-describedby="upload-help">
+        <div class="drop-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="34" height="34">
+            <path d="M12 16V4m0 0 4 4m-4-4L8 8M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"
+              fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h2 id="upload-title">STLファイルを選択</h2>
+        <p id="upload-help">ここにドラッグ＆ドロップ、またはクリックして選択</p>
+        <button id="selectButton" type="button" class="primary-button">ファイルを選択</button>
+        <input id="fileInput" type="file" accept=".stl,model/stl,application/sla" hidden />
+        <p class="small-note">Binary / ASCII STL 対応</p>
+      </div>
+    </section>
+
+    <section id="fileSummary" class="file-summary hidden" aria-live="polite">
+      <div>
+        <div class="label">読み込み中のファイル</div>
+        <div id="fileName" class="file-name">—</div>
+      </div>
+      <div id="fileSize" class="file-size">—</div>
+    </section>
+
+    <section id="loadingSection" class="loading-card hidden" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <div>
+        <strong>解析しています…</strong>
+        <p>大きなSTLでは少し時間がかかる場合があります。</p>
+      </div>
+    </section>
+
+    <section id="resultSection" class="results hidden" aria-live="polite">
+      <div id="overallCard" class="overall-card">
+        <div id="overallIcon" class="overall-icon">✓</div>
+        <div>
+          <div class="label">簡易判定</div>
+          <h2 id="overallTitle">—</h2>
+          <p id="overallMessage">—</p>
+        </div>
+      </div>
+
+      <div class="stats-grid" aria-label="STL基本情報">
+        <article class="stat-card">
+          <span class="label">三角形数</span>
+          <strong id="triangleCount">—</strong>
+        </article>
+        <article class="stat-card">
+          <span class="label">ユニーク頂点</span>
+          <strong id="vertexCount">—</strong>
+        </article>
+        <article class="stat-card">
+          <span class="label">外形寸法</span>
+          <strong id="dimensions">—</strong>
+          <small>STLを mm として解釈</small>
+        </article>
+        <article class="stat-card">
+          <span class="label">推定体積</span>
+          <strong id="volume">—</strong>
+          <small>閉じた形状の場合の参考値</small>
+        </article>
+      </div>
+
+      <div class="check-list">
+        <article class="check-card" id="watertightCheck">
+          <div class="check-status-icon" aria-hidden="true"></div>
+          <div class="check-body">
+            <div class="check-heading">
+              <h3>水密性</h3>
+              <span class="status-badge"></span>
+            </div>
+            <p class="check-description">
+              各エッジが原則2枚の三角形で共有されているかを確認します。
+            </p>
+            <div class="detail-grid">
+              <div><span>開放エッジ</span><strong id="boundaryEdges">—</strong></div>
+              <div><span>Non-manifold edge</span><strong id="nonManifoldEdges">—</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="check-card" id="degenerateCheck">
+          <div class="check-status-icon" aria-hidden="true"></div>
+          <div class="check-body">
+            <div class="check-heading">
+              <h3>退化した三角形</h3>
+              <span class="status-badge"></span>
+            </div>
+            <p class="check-description">
+              面積がほぼ0の三角形や、同じ頂点を重複して持つ面を確認します。
+            </p>
+            <div class="detail-grid single">
+              <div><span>該当面</span><strong id="degenerateTriangles">—</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="check-card" id="orientationCheck">
+          <div class="check-status-icon" aria-hidden="true"></div>
+          <div class="check-body">
+            <div class="check-heading">
+              <h3>面方向の整合性</h3>
+              <span class="status-badge"></span>
+            </div>
+            <p class="check-description">
+              隣接面が共有エッジを同じ向きで使っていないかを簡易確認します。
+            </p>
+            <div class="detail-grid single">
+              <div><span>方向不整合エッジ</span><strong id="orientationIssues">—</strong></div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="notice">
+        <strong>このチェッカーについて</strong>
+        <p>
+          本ツールは簡易チェックです。自己交差、最小肉厚、オーバーハング、
+          サポートの必要性、プリンター固有の造形条件などは判定しません。
+          「問題なし」でも造形成功を保証するものではありません。
+        </p>
+      </aside>
+
+      <div class="actions">
+        <button id="checkAnotherButton" type="button" class="secondary-button">別のSTLをチェック</button>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>STL Checker — Client-side only</p>
+    </footer>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
