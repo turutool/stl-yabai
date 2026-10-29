@@ -407,3 +407,12 @@ h1 {
 }
 .check-card.warn .check-finding { color: var(--warn); }
 .check-card.error .check-finding { color: var(--error); }
+
+/* Blenderで作った人向けの補足（折りたたみ） */
+.check-tip {
+  margin: -6px 0 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.check-tip summary { cursor: pointer; }
+.check-tip ul { margin: 6px 0 0; padding-left: 20px; line-height: 1.6; }

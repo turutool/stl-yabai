@@ -126,6 +126,24 @@ function renderResults(data) {
     const note = card.querySelector(".check-finding");
     note.textContent = items.filter((f) => f.level !== "ok").map((f) => `${f.title}：${f.detail}`).join(" ");
     note.classList.toggle("hidden", !note.textContent);
+
+    // 「Blenderで作った人向け」の補足は折りたたんで出す（他のソフトで作った人の邪魔にしない）
+    let tipBox = card.querySelector(".check-tip");
+    if (!tipBox) {
+      tipBox = document.createElement("details");
+      tipBox.className = "check-tip";
+      tipBox.innerHTML = "<summary>Blenderで作った人向けのヒント</summary><ul></ul>";
+      note.insertAdjacentElement("afterend", tipBox);
+    }
+    const tips = items.filter((f) => f.level !== "ok" && f.tip).map((f) => f.tip);
+    tipBox.querySelector("ul").innerHTML = "";
+    for (const t of tips) {
+      const li = document.createElement("li");
+      li.textContent = t; // textContentで入れる（HTMLとして解釈させない）
+      tipBox.querySelector("ul").appendChild(li);
+    }
+    tipBox.classList.toggle("hidden", tips.length === 0);
+    tipBox.open = false;
   }
 
   // 総合判定

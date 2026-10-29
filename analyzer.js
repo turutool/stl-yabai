@@ -136,7 +136,8 @@
     // 4) 判定。level: "error"(要修正) / "warn"(要確認) / "ok"
     //    group: "size"(サイズ・単位) / "water"(水密性) / "degenerate" / "orientation" / "shell"
     const findings = [];
-    const add = (group, level, title, detail) => findings.push({ group, level, title, detail });
+    // tip は「Blenderで作った人向け」の補足。画面では折りたたんで表示し、他のソフトで作った人の邪魔にならないようにする
+    const add = (group, level, title, detail, tip) => findings.push({ group, level, title, detail, tip });
     const f1 = (v) => v.toFixed(1), f3 = (v) => v.toFixed(3);
 
     if (nonFinite) add("size", "error", "座標が不正", "数値でない座標（NaN・無限大）が含まれています。");
@@ -144,7 +145,8 @@
     // --- サイズ・単位
     if (maxDim < T.maxDimTooSmallError) {
       add("size", "error", "サイズが小さすぎます",
-        `最大寸法が ${f3(maxDim)} mm です。単位の取り違えの疑いがあります（Blenderの書き出しで「シーンの単位」がONになっていないか確認）。`);
+        `最大寸法が ${f3(maxDim)} mm です。書き出し時の単位の取り違え（m・cm・inchとmm）の疑いがあります。モデリングソフトの単位設定と書き出し設定を確認してください。`,
+        "Blenderの場合：STLの書き出し設定で「シーンの単位」がONになっていないか確認します（ONだと1/1000の大きさで書き出されます）。");
     } else if (maxDim < T.maxDimTooSmallWarn) {
       add("size", "warn", "サイズがかなり小さいです", `最大寸法 ${f3(maxDim)} mm。意図したサイズか確認してください。`);
     } else if (maxDim > T.maxDimTooLargeWarn) {
@@ -173,20 +175,23 @@
       const parts = [];
       if (boundary > 0) parts.push(`開いた辺 ${boundary} 本（穴・面の欠け）`);
       if (nonManifold > 0) parts.push(`3枚以上の面が共有する辺 ${nonManifold} 本`);
-      add("water", "error", "モデルが閉じていません", parts.join("、") + "。スライサーが自動で埋めても形が変わることがあります。");
+      add("water", "error", "モデルが閉じていません", parts.join("、") + "。スライサーが自動で埋めても形が変わることがあります。元のモデルが閉じた立体（ソリッド）になっているか確認して、書き出し直してください。");
     } else {
       add("water", "ok", "水密性", "閉じた形状です。");
     }
 
     // --- つぶれた面
-    if (degenerate > 0) add("degenerate", "warn", "つぶれた面があります", `${degenerate} 枚。Blenderの「距離でマージ」で消せる場合があります。`);
+    if (degenerate > 0) add("degenerate", "warn", "つぶれた面があります", `${degenerate} 枚。重複した点や、つぶれた面を整理（頂点の結合・不要な面の削除）して、書き出し直してください。`,
+      "Blenderの場合：編集モードで全選択し、メッシュ → クリーンアップ →「距離でマージ」を実行します。");
     else add("degenerate", "ok", "つぶれた面", "ありません。");
 
     // --- 面の向き
     if (inconsistent > 0) {
-      add("orientation", "warn", "面の向きがそろっていません", `向きが不整合な辺 ${inconsistent} 本。Blenderで Shift+N（法線を外側に揃える）を実行してください。`);
+      add("orientation", "warn", "面の向きがそろっていません", `向きが不整合な辺 ${inconsistent} 本。一部の面の向き（法線）が裏返っています。元のモデルで、面の向きを外側にそろえてから書き出し直してください。`,
+        "Blenderの場合：編集モードで全選択し、Shift+N（法線を外側に揃える）を実行します。");
     } else if (volume < -T.minVolume) {
-      add("orientation", "warn", "全体の向きが逆です", `体積が負（${volume.toFixed(1)} mm³）。面がすべて裏返っています。Blenderで Shift+N を実行してください。`);
+      add("orientation", "warn", "全体の向きが逆です", `体積が負（${volume.toFixed(1)} mm³）。面がすべて裏返っています。元のモデルで、面の向き（法線）を外側にそろえてから書き出し直してください。`,
+        "Blenderの場合：編集モードで全選択し、Shift+N（法線を外側に揃える）を実行します。");
     } else {
       add("orientation", "ok", "面の向き", "そろっています。");
     }
