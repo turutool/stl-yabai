@@ -398,3 +398,12 @@ h1 {
   .detail-grid { grid-template-columns: 1fr; }
   .overall-card { padding: 20px; }
 }
+
+/* 指摘の説明文（問題があるときだけ表示） */
+.check-finding {
+  margin: -6px 0 14px;
+  line-height: 1.6;
+  font-weight: 650;
+}
+.check-card.warn .check-finding { color: var(--warn); }
+.check-card.error .check-finding { color: var(--error); }

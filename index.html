@@ -82,20 +82,29 @@
       </div>
 
       <div class="check-list">
+        <article class="check-card" id="sizeCheck">
+          <div class="check-status-icon" aria-hidden="true"></div>
+          <div class="check-body">
+            <div class="check-heading">
+              <h3>サイズ・単位・厚み</h3>
+              <span class="status-badge"></span>
+            </div>
+            <p class="check-description">寸法がA1の造形範囲に収まるか、極端に小さい（単位ミス）・薄すぎないかを確認します。</p>
+            <p class="check-finding"></p>
+            <div class="detail-grid"><div><span>最小の寸法</span><strong id="minDimension">—</strong></div><div><span>体積</span><strong id="volumeCheck">—</strong></div></div>
+          </div>
+        </article>
+
         <article class="check-card" id="watertightCheck">
           <div class="check-status-icon" aria-hidden="true"></div>
           <div class="check-body">
             <div class="check-heading">
-              <h3>水密性</h3>
+              <h3>水密性（穴あき）</h3>
               <span class="status-badge"></span>
             </div>
-            <p class="check-description">
-              各エッジが原則2枚の三角形で共有されているかを確認します。
-            </p>
-            <div class="detail-grid">
-              <div><span>開放エッジ</span><strong id="boundaryEdges">—</strong></div>
-              <div><span>Non-manifold edge</span><strong id="nonManifoldEdges">—</strong></div>
-            </div>
+            <p class="check-description">各エッジが原則2枚の三角形で共有されているかを確認します。穴や面の欠けがあると「開放エッジ」になります。</p>
+            <p class="check-finding"></p>
+            <div class="detail-grid"><div><span>開放エッジ</span><strong id="boundaryEdges">—</strong></div><div><span>Non-manifold edge</span><strong id="nonManifoldEdges">—</strong></div></div>
           </div>
         </article>
 
@@ -103,15 +112,12 @@
           <div class="check-status-icon" aria-hidden="true"></div>
           <div class="check-body">
             <div class="check-heading">
-              <h3>退化した三角形</h3>
+              <h3>つぶれた面（面積がほぼ0の三角形）</h3>
               <span class="status-badge"></span>
             </div>
-            <p class="check-description">
-              面積がほぼ0の三角形や、同じ頂点を重複して持つ面を確認します。
-            </p>
-            <div class="detail-grid single">
-              <div><span>該当面</span><strong id="degenerateTriangles">—</strong></div>
-            </div>
+            <p class="check-description">面積がほぼ0の三角形や、同じ頂点を重複して持つ面（退化三角形）を確認します。</p>
+            <p class="check-finding"></p>
+            <div class="detail-grid single"><div><span>該当面</span><strong id="degenerateTriangles">—</strong></div></div>
           </div>
         </article>
 
@@ -119,15 +125,25 @@
           <div class="check-status-icon" aria-hidden="true"></div>
           <div class="check-body">
             <div class="check-heading">
-              <h3>面方向の整合性</h3>
+              <h3>面の向き（法線）</h3>
               <span class="status-badge"></span>
             </div>
-            <p class="check-description">
-              隣接面が共有エッジを同じ向きで使っていないかを簡易確認します。
-            </p>
-            <div class="detail-grid single">
-              <div><span>方向不整合エッジ</span><strong id="orientationIssues">—</strong></div>
+            <p class="check-description">隣り合う面の向きがそろっているか、モデル全体が裏返っていないかを確認します。</p>
+            <p class="check-finding"></p>
+            <div class="detail-grid single"><div><span>向きが不整合なエッジ</span><strong id="orientationIssues">—</strong></div></div>
+          </div>
+        </article>
+
+        <article class="check-card" id="shellCheck">
+          <div class="check-status-icon" aria-hidden="true"></div>
+          <div class="check-body">
+            <div class="check-heading">
+              <h3>独立した塊（シェル）</h3>
+              <span class="status-badge"></span>
             </div>
+            <p class="check-description">つながっていない独立した塊がいくつあるかを数えます。重なった別々のオブジェクトなどで増えます。</p>
+            <p class="check-finding"></p>
+            <div class="detail-grid single"><div><span>塊の数</span><strong id="shellCount">—</strong></div></div>
           </div>
         </article>
       </div>
@@ -135,7 +151,7 @@
       <aside class="notice">
         <strong>このチェッカーについて</strong>
         <p>
-          本ツールは簡易チェックです。自己交差、最小肉厚、オーバーハング、
+          本ツールは簡易チェックです。自己交差、壁の薄さ（強度）、オーバーハング、
           サポートの必要性、プリンター固有の造形条件などは判定しません。
           「問題なし」でも造形成功を保証するものではありません。
         </p>
@@ -151,6 +167,7 @@
     </footer>
   </main>
 
+  <script src="./analyzer.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
