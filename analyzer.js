@@ -185,9 +185,27 @@
       let u = rnd(), v = rnd();
       if (u + v > 1) { u = 1 - u; v = 1 - v; }
       const px = tri[o] + u * e1x + v * e2x, py = tri[o + 1] + u * e1y + v * e2y, pz = tri[o + 2] + u * e1z + v * e2z;
-      const d = rayHit(bvh, tri, px - nx * eps, py - ny * eps, pz - nz * eps, -nx, -ny, -nz, t, stack);
-      if (!isFinite(d)) continue; // 反対側がない（開いた形）。この点は数えない
-      const thick = d + eps;
+      // 法線の真下に1本＋斜め45度の8本を撃ち、「面に垂直な方向に直した距離」の最大を厚みとする。
+      // 細かい凹凸で法線が大きく傾いた面でも、隣の凸に当たって細いと誤判定しないため（斜めの光線が反対側まで届く）。
+      // 平らな板や円柱の細い肢では、真下の1本が最大になり、厚みがそのまま出る。
+      let ux, uy, uz;
+      if (Math.abs(nx) < 0.9) { ux = 0; uy = nz; uz = -ny; } else { ux = -nz; uy = 0; uz = nx; }
+      const ul = Math.sqrt(ux * ux + uy * uy + uz * uz); ux /= ul; uy /= ul; uz /= ul;
+      const vx = ny * uz - nz * uy, vy = nz * ux - nx * uz, vz = nx * uy - ny * ux;
+      let thick = -1;
+      for (let j = 0; j < 9; j++) {
+        let dx = -nx, dy = -ny, dz = -nz, cs = 1;
+        if (j > 0) {
+          const ph = (j - 1) * Math.PI / 4, c = Math.SQRT1_2;
+          dx = -nx * c + c * (Math.cos(ph) * ux + Math.sin(ph) * vx);
+          dy = -ny * c + c * (Math.cos(ph) * uy + Math.sin(ph) * vy);
+          dz = -nz * c + c * (Math.cos(ph) * uz + Math.sin(ph) * vz);
+          cs = c;
+        }
+        const d = rayHit(bvh, tri, px - nx * eps, py - ny * eps, pz - nz * eps, dx, dy, dz, t, stack);
+        if (isFinite(d) && d * cs + eps > thick) thick = d * cs + eps;
+      }
+      if (thick < 0) continue; // 反対側がない（開いた形）。この点は数えない
       valid++;
       if (thick < minT) minT = thick;
       if (thick < T.thinError) err++;
