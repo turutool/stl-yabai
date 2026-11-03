@@ -38,6 +38,31 @@ function boxFaces(x0, y0, z0, x1, y1, z1) {
 const box = (...a) => Object.values(boxFaces(...a)).flat();
 const flip = (tris) => tris.map(([a, b, c]) => [a, c, b]);
 
+
+/* ---------- チョウチンアンコウ型（球＋細い肢）。2026-11 のBambu Studio実測と同じ形 ---------- */
+function revolve(profile, n) {
+  const tris = [], ang = [];
+  for (let k = 0; k < n; k++) ang.push((2 * Math.PI * k) / n);
+  const pt = (i, k) => [profile[i][0] * Math.cos(ang[k % n]), profile[i][0] * Math.sin(ang[k % n]), profile[i][1]];
+  for (let i = 0; i < profile.length - 1; i++) for (let k = 0; k < n; k++) {
+    const a = pt(i, k), b = pt(i, k + 1), c = pt(i + 1, k + 1), d = pt(i + 1, k);
+    if (profile[i][0] === 0) tris.push([a, c, d]);
+    else if (profile[i + 1][0] === 0) tris.push([a, b, c]);
+    else tris.push([a, b, c], [a, c, d]);
+  }
+  return tris;
+}
+function lure(stalkD, h = 20, ballD = 8, n = 48) {
+  const r = stalkD / 2, R = ballD / 2, zc = h + R, z0 = zc - Math.sqrt(R * R - r * r);
+  const prof = [[0, 0], [r, 0], [r, z0]];
+  const a0 = Math.atan2(z0 - zc, r), m = 40;
+  for (let j = 1; j < m; j++) { const a = a0 + ((Math.PI / 2 - a0) * j) / m; prof.push([R * Math.cos(a), zc + R * Math.sin(a)]); }
+  prof.push([0, zc + R]);
+  return revolve(prof, n);
+}
+// 上下を逆にする（X軸まわりに180度回転。面の向きは保たれる）→ 球を床側にした向き
+const ballDown = (tris, H) => tris.map((t) => t.map(([x, y, z]) => [x, -y, H - z]));
+
 /* ---------- テスト ---------- */
 const cases = [];
 const t = (name, tris, expect, extra) => cases.push({ name, tris, expect, extra });
@@ -83,6 +108,20 @@ t("NG_07 厚み0.05mmの板", box(0, 0, 0, 20, 20, 0.05), { verdict: "error", le
 t("入れ子の立方体（内側も閉じている）", [...box(0,0,0,20,20,20), ...box(5,5,5,15,15,15)], { verdict: "warn", shells: 2 });
 t("造形範囲オーバー 300mm", box(0, 0, 0, 300, 20, 20), { verdict: "error", level: ["size", "error"] });
 t("単位ミス 25000mm（m→mm）", box(0, 0, 0, 20000, 20000, 20000), { verdict: "warn", level: ["size", "warn"] });
+
+// 細い部分：ノズル0.4mmでの実測（0.4mm以下は消える／エラー、0.5mmはゆがんで通る、0.6mm以上は通る）
+t("細い肢 0.3mm（肢を床側）", lure(0.3), { verdict: "error", level: ["thin", "error"] });
+t("細い肢 0.4mm（球を床側）", ballDown(lure(0.4), 28), { verdict: "error", level: ["thin", "error"] });
+t("細い肢 0.5mm", lure(0.5), { verdict: "warn", level: ["thin", "warn"] });
+t("細い肢 0.6mm", lure(0.6), { verdict: "warn", level: ["thin", "warn"] });
+t("太い肢 1.0mm（球を床側）→ 細さは問題なし", ballDown(lure(1.0), 28), { verdict: "warn", level: ["thin", "ok"] });
+t("太い肢 2.0mm（肢を床側）→ 接地面積が小さい警告", lure(2.0), { verdict: "warn", level: ["contact", "warn"] });
+t("球を床側 → 接地面積が小さい警告", ballDown(lure(1.0), 28), { verdict: "warn", level: ["contact", "warn"] });
+t("立方体は接地面積も細さも問題なし", box(0, 0, 0, 20, 20, 20), { verdict: "ok", level: ["contact", "ok"] });
+t("面の向きが不整合なときは、細さを未判定として要確認にする", (() => {
+  const f = boxFaces(0, 0, 0, 20, 20, 20);
+  return [...f.bottom, ...f.front, ...f.back, ...f.left, ...f.right, ...flip(f.top)];
+})(), { verdict: "warn", level: ["thin", "warn"] });
 
 // SAMPLES_DIR=出力先 node tests/run.js で、テスト用STLをファイルとしても書き出せます（画面での動作確認用）
 if (process.env.SAMPLES_DIR) {

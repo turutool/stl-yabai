@@ -146,13 +146,41 @@
             <div class="detail-grid single"><div><span>塊の数</span><strong id="shellCount">—</strong></div></div>
           </div>
         </article>
+
+        <article class="check-card" id="thinCheck">
+          <div class="check-status-icon" aria-hidden="true"></div>
+          <div class="check-body">
+            <div class="check-heading">
+              <h3>細すぎる部分（肢・突起・薄い壁）</h3>
+              <span class="status-badge"></span>
+            </div>
+            <p class="check-description">表面から内側へ向けて、反対側の面までの距離を測ります。ノズル（0.4mm）より細い部分は、スライサーで消えたり、印刷できなかったりします。</p>
+            <p class="check-finding"></p>
+            <div class="detail-grid single"><div><span>測った中で最も細い厚み</span><strong id="thinMin">—</strong></div></div>
+          </div>
+        </article>
+
+        <article class="check-card" id="contactCheck">
+          <div class="check-status-icon" aria-hidden="true"></div>
+          <div class="check-body">
+            <div class="check-heading">
+              <h3>床に接する面積</h3>
+              <span class="status-badge"></span>
+            </div>
+            <p class="check-description">このSTLの向きのまま置いたとき、1層目（最下面から0.2mm）で床に接する面積を見ます。球や尖った先を下にした形は、印刷中にはがれやすくなります。</p>
+            <p class="check-finding"></p>
+            <div class="detail-grid single"><div><span>接地面積の目安</span><strong id="contactArea">—</strong></div></div>
+          </div>
+        </article>
       </div>
 
       <aside class="notice">
         <strong>このチェッカーについて</strong>
         <p>
-          本ツールは簡易チェックです。自己交差、壁の薄さ（強度）、オーバーハング、
+          本ツールは簡易チェックです。自己交差、強度、オーバーハング、
           サポートの必要性、プリンター固有の造形条件などは判定しません。
+          細い部分と接地面積の基準は、Bambu Lab A1（ノズル0.4mm）での実測にもとづく暫定値です。
+          スライサーでサポートをOFFにしてスライスし、警告とプレビューも確認してください。
           「問題なし」でも造形成功を保証するものではありません。
         </p>
       </aside>

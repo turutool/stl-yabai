@@ -98,7 +98,9 @@ const CARDS = {
   water: "watertightCheck",
   degenerate: "degenerateCheck",
   orientation: "orientationCheck",
-  shell: "shellCheck"
+  shell: "shellCheck",
+  thin: "thinCheck",
+  contact: "contactCheck"
 };
 
 function renderResults(data) {
@@ -115,6 +117,8 @@ function renderResults(data) {
   setText("degenerateTriangles", s.degenerate.toLocaleString());
   setText("orientationIssues", s.inconsistent.toLocaleString());
   setText("shellCount", s.shells.toLocaleString());
+  setText("thinMin", s.thinMin == null ? "—（未判定）" : `${formatNumber(s.thinMin)} mm`);
+  setText("contactArea", s.contactArea == null ? "—（未判定）" : `約 ${formatNumber(s.contactArea)} mm²`);
 
   // カードごとに、いちばん重い指摘の状態を表示
   for (const [group, cardId] of Object.entries(CARDS)) {
@@ -155,7 +159,7 @@ function renderResults(data) {
   const problems = data.findings.filter((f) => f.level !== "ok")
     .sort((a, b) => RANK[b.level] - RANK[a.level]);
   const messages = {
-    ok: "この簡易チェックでは、サイズ・水密性・つぶれた面・面の向き・独立した塊に問題は検出されませんでした。ただし、造形の成功を保証するものではありません。スライサーのプレビューも確認してください。",
+    ok: "この簡易チェックでは、サイズ・水密性・つぶれた面・面の向き・独立した塊・細い部分・接地面積に問題は検出されませんでした。ただし、造形の成功を保証するものではありません。スライサーのプレビューも確認してください。",
     warn: "印刷はできる可能性がありますが、意図どおりか確認してください。 " + problems.map((f) => f.title).join("、") + "。",
     error: "印刷に失敗するおそれがあります。 " + problems.filter((f) => f.level === "error").map((f) => f.title).join("、") + "。"
   };
