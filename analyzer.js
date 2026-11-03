@@ -378,11 +378,11 @@
       const pct = (f) => (f * 100).toFixed(1) + "%";
       if (thin && thin.errFrac >= T.thinAreaFraction) {
         add("thin", "error", "細すぎる部分があります",
-          `厚みが ${T.thinError} mm 未満の部分が、表面の約 ${pct(thin.errFrac)} あります（最小 ${thin.minT.toFixed(2)} mm）。ノズル ${T.nozzle} mm より細い部分は、スライサーで消えるか、印刷できません。向きを変えても直りません。元のモデルで細い部分を ${T.thinWarn} mm 以上に太くしてください。`,
+          `厚みが ${T.thinError} mm 未満の部分が、表面の約 ${pct(thin.errFrac)} あります（最小 ${thin.minT.toFixed(2)} mm）。ノズル ${T.nozzle} mm より細い部分は、スライサーで消えるか、印刷できません。向きを変えても直りません。元のモデルで細い部分を ${T.thinWarn} mm より太くしてください。`,
           "Blenderの場合：細い部分の頂点を選んで拡大（S）するか、ソリッド化モディファイアで厚みを付けます。");
       } else if (thin && thin.warnFrac >= T.thinAreaFraction) {
         add("thin", "warn", "細めの部分があります",
-          `厚みが ${T.thinWarn} mm 未満の部分が、表面の約 ${pct(thin.warnFrac)} あります（最小 ${thin.minT.toFixed(2)} mm）。スライスはできても、形がゆがんだり、印刷中に折れたりするおそれがあります。可能なら ${T.thinWarn} mm 以上に太くしてください。`);
+          `厚みが ${T.thinWarn} mm 未満の部分が、表面の約 ${pct(thin.warnFrac)} あります（最小 ${thin.minT.toFixed(2)} mm）。スライスはできても、形がゆがんだり、印刷中に折れたりするおそれがあります。可能なら ${T.thinWarn} mm より太くしてください。`);
       } else {
         add("thin", "ok", "細い部分", thin ? `最小 ${thin.minT.toFixed(2)} mm（${T.thinWarn} mm 未満の部分はほぼありません）。` : "測定できる面がありませんでした。");
       }
